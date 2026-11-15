@@ -1,6 +1,6 @@
 <p align="center">
-    <img src="Hat.png" alt="hat logo" width="200">
-    A *cat(1)* clone made as a recreational programming project.
+    <img src="Banner.png" alt="hat banner" width="200"><br>
+    A <code>cat(1)</code> clone made as a recreational programming project.
 </p>
 
 <p align="center">
