@@ -1,40 +1,54 @@
-use fmt;
-use os;
-use io;
-use fs;
-use types;
 use bufio;
+use fmt;
+use fs;
 use getopt;
-use strings;
+use io;
+use os;
+use types;
 
-fn print_file_line(
-	number_all: bool, 
-	remove_empty: bool,
-	non_printing: bool,
-	index: *uint,
-	line: str
-) void = {
-	if (remove_empty) {
-		if (strings::compare(strings::trim(line), "") == 0) {
-			*index = *index - 1;
-			return;
-		};
-	};
-
-	if (number_all) {
-		fmt::printf("{}\t", *index)!;
-	};
-
-	fmt::printf("{}\n", line)!;
+type options = struct {
+	number: bool,
+	squeeze: bool,
 };
 
+type state = struct {
+	index: uint,
+	prev_blank: bool,
+};
 
-fn handle_file(
-	number_all: bool, 
-	remove_empty: bool,
-	non_printing: bool,
-	path: str
-) void = {
+fn print_line(opts: *options, st: *state, line: str) void = {
+	const blank = len(line) == 0;
+	if (opts.squeeze && blank && st.prev_blank) {
+		return;
+	};
+	st.prev_blank = blank;
+	st.index += 1;
+
+	if (opts.number) {
+		fmt::printf("{:6}\t", st.index)!;
+	};
+	fmt::println(line)!;
+};
+
+fn cat(opts: *options, st: *state, in: io::handle) void = {
+	const scan = bufio::newscanner(in, types::SIZE_MAX);
+	defer bufio::finish(&scan);
+
+	for (true) {
+		match (bufio::scan_line(&scan)!) {
+		case io::EOF =>
+			break;
+		case let line: const str =>
+			print_line(opts, st, line);
+		};
+	};
+};
+
+fn cat_path(opts: *options, st: *state, path: str) void = {
+	if (path == "-") {
+		cat(opts, st, os::stdin);
+		return;
+	};
 	const file = match (os::open(path)) {
 	case let file: io::file =>
 		yield file;
@@ -42,49 +56,36 @@ fn handle_file(
 		fmt::fatalf("Error opening {}: {}", path, fs::strerror(err));
 	};
 	defer io::close(file)!;
-
-	const scan = bufio::newscanner(file, types::SIZE_MAX);
-	defer bufio::finish(&scan);
-
-	for (let i = 1u; true; i += 1) {
-		const line = match (bufio::scan_line(&scan)!) {
-		case io::EOF =>
-			break;
-		case let line: const str =>
-			yield line;
-		};
-		print_file_line(number_all, remove_empty, non_printing, &i, line);
-	};
+	cat(opts, st, file);
 };
 
 export fn main() void = {
 	const cmd = getopt::parse(os::args,
-		"A recreational programming project that reeimplements cat(1) in Hare",
-		('n', "add numbers to each line"),
-		('s', "remove extra empty lines"),
-		('v', "show non-printing characters (except for tabs and end of line)"),
-		('f', "file", "path to a file whose content you want to display"),
+		"A recreational programming project that reimplements cat(1) in Hare",
+		('n', "Display line numbers."),
+		('s', "Squeeze consecutive empty lines into one."),
+		"[file...]",
 	);
 	defer getopt::finish(&cmd);
 
-	let number_all: bool = false;
-	let remove_empty: bool = false;
-	let non_printing: bool = false;
-	let path: str = "";
-
+	let opts = options { ... };
 	for (let opt .. cmd.opts) {
 		switch (opt.0) {
 		case 'n' =>
-			number_all = true;
+			opts.number = true;
 		case 's' =>
-			remove_empty = true;
-		case 'v' =>
-			non_printing = true;
-		case 'f' =>
-			path = opt.1;
-		case => abort();
+			opts.squeeze = true;
+		case =>
+			abort();
 		};
 	};
 
-	handle_file(number_all, remove_empty, non_printing, path);
+	let st = state { ... };
+	if (len(cmd.args) == 0) {
+		cat(&opts, &st, os::stdin);
+	} else {
+		for (let path .. cmd.args) {
+			cat_path(&opts, &st, path);
+		};
+	};
 };
