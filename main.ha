@@ -1,40 +1,18 @@
 use fmt;
 use os;
 use io;
-use strings;
 use fs;
 use types;
 use bufio;
+use getopt;
 
-fn usage(stream: io::handle) void = {
-	fmt::fprintf(stream, "Usage: rab [OPTIONS] [--] [path]\n")!;
-};
-
-fn handle_arg(arg: str) void = {
-	if (strings::hasprefix(arg, '-')) {
-		handle_flag(arg);
-		return;
-	};
-
-	handle_file(arg);
-};
-
-fn handle_flag(flag: str) void = {
-	if (strings::compare(flag, "-h") == 0 || strings::compare(flag, "--help") == 0) {
-		usage(os::stdout);
-		os::exit(0);
-	};
-
-	if (strings::compare(flag, "-v") == 0 || strings::compare(flag, "--version") == 0) {
-		fmt::printf("rab 0.0.1\n")!;
-		os::exit(0);
-	};
-
-	fmt::fprintf(os::stderr, "rab: invalid option '{}'\nTry 'rab --help' for more information.\n", flag)!;
-	os::exit(1);
-};
-
-fn handle_file(path: str) void = {
+fn handle_file(
+	number_all: bool, 
+	number_occupied: bool,
+	remove_empty: bool,
+	non_printing: bool,
+	path: str
+) void = {
 	const file = match (os::open(path)) {
 	case let file: io::file =>
 		yield file;
@@ -58,14 +36,37 @@ fn handle_file(path: str) void = {
 };
 
 export fn main() void = {
-	const args = os::args;
+	const cmd = getopt::parse(os::args,
+		"A recreational programming project that reeimplements cat(1) in Hare",
+		('n', "add numbers to each line"),
+		('b', "add numbers only to lines with text"),
+		('s', "remove extra empty lines"),
+		('v', "show non-printing characters (except for tabs and end of line)"),
+		('f', "file", "path to a file whose content you want to display"),
+	);
+	defer getopt::finish(&cmd);
 
-	if (len(args) < 2) {
-		usage(os::stderr);
-		os::exit(1);
+	let number_all: bool = false;
+	let number_occupied: bool = false;
+	let remove_empty: bool = false;
+	let non_printing: bool = false;
+	let path: str = "";
+
+	for (let opt .. cmd.opts) {
+		switch (opt.0) {
+		case 'n' =>
+			number_all = true;
+		case 'b' =>
+			number_occupied = true;
+		case 's' =>
+			remove_empty = true;
+		case 'v' =>
+			non_printing = true;
+		case 'f' =>
+			path = opt.1;
+		case => abort();
+		};
 	};
 
-	for (let arg .. args[1..]) {
-		handle_arg(arg);
-	};
+	handle_file(number_all, number_occupied, remove_empty, non_printing, path);
 };
