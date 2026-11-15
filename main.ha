@@ -5,18 +5,42 @@ use fs;
 use types;
 use bufio;
 use getopt;
+use strings;
 
 fn print_file_line(
 	number_all: bool, 
 	number_occupied: bool,
 	remove_empty: bool,
 	non_printing: bool,
-	index: uint,
+	index: *uint,
 	line: str
 ) void = {
 	if (number_all) {
-		fmt::printfln("{} {}", index, line)!;
+		fmt::printfln("{} {}", *index, line)!;
+		return;
 	};
+
+	if (number_occupied) {
+		if (strings::compare(strings::trim(line), "") == 0) {
+			fmt::printfln("{}", line)!;
+			*index = *index - 1;
+			return;
+		};
+
+		fmt::printfln("{} {}", *index, line)!;
+		return;
+	};
+
+	if (remove_empty) {
+		if (strings::compare(strings::trim(line), "") == 0) {
+			return;
+		};
+
+		fmt::printfln("{}", line)!;
+		return;
+	};
+
+	fmt::printfln("{}", line)!;
 };
 
 
@@ -45,7 +69,7 @@ fn handle_file(
 		case let line: const str =>
 			yield line;
 		};
-		print_file_line(number_all, number_occupied, remove_empty, non_printing, i, line);
+		print_file_line(number_all, number_occupied, remove_empty, non_printing, &i, line);
 	};
 };
 
