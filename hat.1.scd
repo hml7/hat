@@ -1,4 +1,4 @@
-hat(1) "" "hat manual"
+hat(1) "@VERSION@" "hat manual"
 
 # NAME
 

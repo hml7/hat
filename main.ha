@@ -6,6 +6,8 @@ use io;
 use os;
 use types;
 
+def VERSION: str = "dev";
+
 type options = struct {
 	number: bool,
 	squeeze: bool,
@@ -14,6 +16,10 @@ type options = struct {
 type state = struct {
 	index: uint,
 	prev_blank: bool,
+};
+
+fn print_version() void = {
+	fmt::printfln("hat {}", VERSION)!;
 };
 
 fn print_line(opts: *options, st: *state, line: str) void = {
@@ -77,7 +83,8 @@ export fn main() void = {
 		case 's' =>
 			opts.squeeze = true;
 		case 'V' =>
-			abort();
+			print_version();
+			os::exit(0);
 		case =>
 			abort();
 		};

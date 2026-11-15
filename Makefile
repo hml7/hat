@@ -1,14 +1,18 @@
-PREFIX ?= /usr/local
-BINDIR ?= $(PREFIX)/bin
-MANDIR ?= $(PREFIX)/share/man
+PREFIX  ?= /usr/local
+BINDIR  ?= $(PREFIX)/bin
+MANDIR  ?= $(PREFIX)/share/man
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
 all: hat hat.1
 
-hat: main.ha
-	hare build -o $@ main.ha
+.version: FORCE
+	@echo '$(VERSION)' | cmp -s - $@ || echo '$(VERSION)' > $@
 
-hat.1: hat.1.scd
-	scdoc < hat.1.scd > $@
+hat: main.ha .version
+	hare build -D VERSION:str='"$(VERSION)"' -o $@ main.ha
+
+hat.1: hat.1.scd .version
+	sed 's/@VERSION@/$(VERSION)/g' hat.1.scd | scdoc > $@
 
 install: all
 	install -Dm755 hat $(DESTDIR)$(BINDIR)/hat
@@ -19,6 +23,8 @@ uninstall:
 	rm -f $(DESTDIR)$(MANDIR)/man1/hat.1
 
 clean:
-	rm -f hat hat.1
+	rm -f hat hat.1 .version
 
-.PHONY: all install uninstall clean
+FORCE:
+
+.PHONY: all install uninstall clean FORCE
