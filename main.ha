@@ -64,6 +64,7 @@ export fn main() void = {
 		"A recreational programming project that reimplements cat(1) in Hare",
 		('n', "Display line numbers."),
 		('s', "Squeeze consecutive empty lines into one."),
+		('V', "Print version."),
 		"[file...]",
 	);
 	defer getopt::finish(&cmd);
@@ -75,6 +76,8 @@ export fn main() void = {
 			opts.number = true;
 		case 's' =>
 			opts.squeeze = true;
+		case 'V' =>
+			abort();
 		case =>
 			abort();
 		};
