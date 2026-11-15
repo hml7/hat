@@ -6,6 +6,20 @@ use types;
 use bufio;
 use getopt;
 
+fn print_file_line(
+	number_all: bool, 
+	number_occupied: bool,
+	remove_empty: bool,
+	non_printing: bool,
+	index: uint,
+	line: str
+) void = {
+	if (number_all) {
+		fmt::printfln("{} {}", index, line)!;
+	};
+};
+
+
 fn handle_file(
 	number_all: bool, 
 	number_occupied: bool,
@@ -31,7 +45,7 @@ fn handle_file(
 		case let line: const str =>
 			yield line;
 		};
-		fmt::printfln("{}\t{}", i, line)!;
+		print_file_line(number_all, number_occupied, remove_empty, non_printing, i, line);
 	};
 };
 
