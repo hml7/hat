@@ -1,11 +1,25 @@
-# hat
+<p align="center">
+    <img src="Hat.png" alt="hat logo" width="200">
+    A *cat(1)* clone made as a recreational programming project.
+</p>
 
-A recreational programming project that reimplements *cat(1)* in [Hare](https://harelang.org). Heavily inspired by [sharkdp's bat](https://github.com/sharkdp/bat).
+<p align="center">
+    <a href="#how-to-use">How to use</a> •
+    <a href="#installation">Installation</a>
+</p>
 
 > [!WARNING]
 > hat is developed purely as a recreational project, so it takes its own approach rather than aiming to be a full `cat` replacement. Think of it as a prettier `cat` experience, not a drop-in replacement. It is still under development.
 >
 > Long term, the goal is to support POSIX `cat` behavior, but that is not the case yet.
+
+## How to use
+
+Display a single file on the terminal
+
+```sh
+bat test.txt
+```
 
 ## Installation
 
