@@ -9,44 +9,28 @@ use strings;
 
 fn print_file_line(
 	number_all: bool, 
-	number_occupied: bool,
 	remove_empty: bool,
 	non_printing: bool,
 	index: *uint,
 	line: str
 ) void = {
-	if (number_all) {
-		fmt::printfln("{} {}", *index, line)!;
-		return;
-	};
-
-	if (number_occupied) {
+	if (remove_empty) {
 		if (strings::compare(strings::trim(line), "") == 0) {
-			fmt::printfln("{}", line)!;
 			*index = *index - 1;
 			return;
 		};
-
-		fmt::printfln("{} {}", *index, line)!;
-		return;
 	};
 
-	if (remove_empty) {
-		if (strings::compare(strings::trim(line), "") == 0) {
-			return;
-		};
-
-		fmt::printfln("{}", line)!;
-		return;
+	if (number_all) {
+		fmt::printf("{}\t", *index)!;
 	};
 
-	fmt::printfln("{}", line)!;
+	fmt::printf("{}\n", line)!;
 };
 
 
 fn handle_file(
 	number_all: bool, 
-	number_occupied: bool,
 	remove_empty: bool,
 	non_printing: bool,
 	path: str
@@ -69,7 +53,7 @@ fn handle_file(
 		case let line: const str =>
 			yield line;
 		};
-		print_file_line(number_all, number_occupied, remove_empty, non_printing, &i, line);
+		print_file_line(number_all, remove_empty, non_printing, &i, line);
 	};
 };
 
@@ -77,7 +61,6 @@ export fn main() void = {
 	const cmd = getopt::parse(os::args,
 		"A recreational programming project that reeimplements cat(1) in Hare",
 		('n', "add numbers to each line"),
-		('b', "add numbers only to lines with text"),
 		('s', "remove extra empty lines"),
 		('v', "show non-printing characters (except for tabs and end of line)"),
 		('f', "file", "path to a file whose content you want to display"),
@@ -85,7 +68,6 @@ export fn main() void = {
 	defer getopt::finish(&cmd);
 
 	let number_all: bool = false;
-	let number_occupied: bool = false;
 	let remove_empty: bool = false;
 	let non_printing: bool = false;
 	let path: str = "";
@@ -94,8 +76,6 @@ export fn main() void = {
 		switch (opt.0) {
 		case 'n' =>
 			number_all = true;
-		case 'b' =>
-			number_occupied = true;
 		case 's' =>
 			remove_empty = true;
 		case 'v' =>
@@ -106,5 +86,5 @@ export fn main() void = {
 		};
 	};
 
-	handle_file(number_all, number_occupied, remove_empty, non_printing, path);
+	handle_file(number_all, remove_empty, non_printing, path);
 };
