@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="Banner.png" alt="hat banner" width="200"><br>
+    <img src="Logo.png" alt="hat logo" width="200"><br>
     A <code>cat(1)</code> clone made as a recreational programming project.
 </p>
 
